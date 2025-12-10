@@ -17,8 +17,8 @@ env:
 
 jobs:
   release-packages:
-    name: Release DEB & RPM Package
-    runs-on: ubuntu-22.04
+    name: Release DEB Package
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4.0.0
         with:
@@ -56,25 +56,6 @@ jobs:
           fpm_args: '.'
           fpm_opts: '-t deb -v ${{ env.VERSION }} --iteration ${{ env.ITERATION }} -C release ${{ env.COMMON_FPM_OPTS }} ${{ env.DEB_FPM_OPTS }}'
       
-      - name: Make RPM release directory
-        run: |
-          mkdir -p rpm-release/etc/kvrocks
-          mkdir -p rpm-release/usr/bin
-          mkdir -p rpm-release/usr/lib/systemd/system
-          mkdir -p rpm-release/usr/share/licenses/kvrocks
-
-          cp kvrocks/build/kvrocks rpm-release/usr/bin/
-          cp kvrocks/build/kvrocks2redis rpm-release/usr/bin/
-          cp kvrocks/kvrocks.conf rpm-release/etc/kvrocks/
-          cp -r kvrocks/LICENSE kvrocks/NOTICE kvrocks/licenses/* rpm-release/usr/share/licenses/kvrocks/
-          cp kvrocks/utils/systemd/kvrocks.service rpm-release/usr/lib/systemd/system/
-
-      - name: Package RPM
-        uses: bpicode/github-action-fpm@v0.9.3
-        with:
-          fpm_args: '.'
-          fpm_opts: '-t rpm -v ${{ env.VERSION }} --iteration ${{ env.ITERATION }} -C rpm-release ${{ env.COMMON_FPM_OPTS }}'
-
       - name: Release
         uses: softprops/action-gh-release@v2.0.6
         with:
@@ -82,6 +63,5 @@ jobs:
             ${{ env.VERSION }}-${{ env.ITERATION }}
           files: |
             ./*.deb
-            ./*.rpm
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
