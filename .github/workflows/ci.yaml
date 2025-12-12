@@ -72,7 +72,16 @@ jobs:
           mkdir release/usr/bin
           mkdir release/usr/share
           mkdir release/usr/share/kvrocks
+          echo "."
+          ls -ail .
+          echo ".."
+          ls -ail ..
+          echo "kvrocks"
           ls -ail kvrocks
+          echo "kvrocks/build"
+          ls -ail kvrocks/build
+          echo "release"
+          ls -ail release
           cp kvrocks/build/kvrocks release/usr/bin/
           cp kvrocks/build/kvrocks2redis release/usr/bin/
           cp kvrocks/kvrocks.conf release/etc/kvrocks
@@ -81,6 +90,7 @@ jobs:
           cp kvrocks/utils/systemd/kvrocks.service release/lib/systemd/system/kvrocks-server.service
           cp systemd_debian.conf release/etc/systemd/system/kvrocks.service.d/debian.conf
           cp kvrocks.logrotate release/etc/logrotate.d/kvrocks
+          ls -ailR release
 
       - name: Package DEB
         uses: bpicode/github-action-fpm@v0.9.3
