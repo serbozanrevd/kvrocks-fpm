@@ -24,8 +24,8 @@ env:
     --license 'Apache-2.0'
     --conflicts redis
     --conflicts redis-server
-    --provide redis
-    --provide redis-server
+    --provides redis
+    --provides redis-server
     --after-install kvrocks.postinst
 
 jobs:
