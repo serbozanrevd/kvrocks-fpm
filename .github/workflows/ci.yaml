@@ -32,6 +32,8 @@ jobs:
   release-packages:
     name: Release DEB Package
     runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: true
     steps:
       - uses: actions/checkout@v4.0.0
         with:
@@ -45,6 +47,7 @@ jobs:
         run: |
           echo "VERSION=$(cat VERSION)" >> $GITHUB_ENV
           echo "ITERATION=$(cat ITERATION)" >> $GITHUB_ENV
+          echo "NEXT_ITERATION=$(($(cat ITERATION)+1))" >> $GITHUB_ENV
           
       - name: Tag version and push
         run: |
@@ -60,9 +63,12 @@ jobs:
           ./x.py build -DPORTABLE=1 -DCMAKE_BUILD_TYPE=Release -j $(nproc)
 
       - name: Make DEB release directory
+        env:
+          Build_Version: ${{ github.run_id }}.${{ github.run_number }}.${{ github.run_attempt }}
         run: |
           mkdir release
           mkdir release/etc
+          mkdir release/etc/kvrocks/
           mkdir release/etc/logrotate.d
           mkdir release/etc/systemd
           mkdir release/etc/systemd/system
@@ -91,20 +97,23 @@ jobs:
           ls -ailR release
           cp kvrocks/build/kvrocks release/usr/bin/
           cp kvrocks/build/kvrocks2redis release/usr/bin/
-          cp kvrocks/kvrocks.conf release/etc/kvrocks
+          cp kvrocks/kvrocks.conf release/etc/kvrocks/
           cp kvrocks.logrotate release/etc/logrotate.d/kvrocks
-          cp -r kvrocks/LICENSE kvrocks/NOTICE kvrocks/licenses release/usr/share/kvrocks
+          cp -r kvrocks/LICENSE kvrocks/NOTICE kvrocks/licenses release/usr/share/kvrocks/
           cp kvrocks/utils/systemd/kvrocks.service release/lib/systemd/system/kvrocks-server.service
           cp systemd_debian.conf release/etc/systemd/system/kvrocks.service.d/debian.conf
+          echo "{\"version\": \"${{ env.Build_Version }}\"}" > release/usr/share/kvrocks/build_version.json
           ls -ailR release
 
       - name: Package DEB
+        continue-on-error: false
         uses: bpicode/github-action-fpm@v0.9.3
         with:
           fpm_args: '.'
           fpm_opts: '-t deb -v ${{ env.VERSION }} --iteration ${{ env.ITERATION }} -C release ${{ env.COMMON_FPM_OPTS }} ${{ env.DEB_FPM_OPTS }}'
       
       - name: Release
+        continue-on-error: false
         uses: softprops/action-gh-release@v2.0.6
         with:
           tag_name: v${{ env.VERSION }}
@@ -114,3 +123,12 @@ jobs:
             ./*.deb
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Increment the value inside ITERATION
+        continue-on-error: false
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          echo "${{ NEXT_ITERATION }}" > ITERATION
+          git commit -m "increment the ITERATION" ITERATION
+          git push origin
