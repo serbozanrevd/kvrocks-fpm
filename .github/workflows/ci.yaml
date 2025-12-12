@@ -69,6 +69,7 @@ jobs:
           mkdir release/etc/systemd/system/kvrocks.service.d
           mkdir release/lib
           mkdir release/lib/systemd
+          mkdir release/lib/systemd/kvrocks-server.service
           mkdir release/usr
           mkdir release/usr/bin
           mkdir release/usr/share
