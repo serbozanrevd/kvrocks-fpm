@@ -115,7 +115,7 @@ jobs:
         continue-on-error: false
         uses: softprops/action-gh-release@v2.0.6
         with:
-          tag_name: v${{ env.VERSION }}
+          tag_name: v${{ env.VERSION }}-${{ env.ITERATION }}
           name: |
             ${{ env.VERSION }}-${{ env.ITERATION }}
           files: |
@@ -123,16 +123,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Increment variable NEXT_ITERATION
-        continue-on-error: false
-        uses: MandalAutomations/Increment-Environment-Variable@v1
-        with:
-          Name: ITERATION
-          Token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Increment the value inside ITERATION
         continue-on-error: false
         run: |
+          ./up_iteration.sh
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
           echo "${{ env.ITERATION }}" > ITERATION
