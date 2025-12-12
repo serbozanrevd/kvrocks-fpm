@@ -47,8 +47,7 @@ jobs:
         run: |
           echo "VERSION=$(cat VERSION)" >> $GITHUB_ENV
           echo "ITERATION=$(cat ITERATION)" >> $GITHUB_ENV
-          echo "NEXT_ITERATION=$((${{ env.ITERATION }}+1))" >> $GITHUB_ENV
-          
+
       - name: Tag version and push
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
@@ -111,7 +110,7 @@ jobs:
         with:
           fpm_args: '.'
           fpm_opts: '-t deb -v ${{ env.VERSION }} --iteration ${{ env.ITERATION }} -C release ${{ env.COMMON_FPM_OPTS }} ${{ env.DEB_FPM_OPTS }}'
-      
+
       - name: Release
         continue-on-error: false
         uses: softprops/action-gh-release@v2.0.6
@@ -124,11 +123,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Increment variable NEXT_ITERATION
+        continue-on-error: false
+        uses: MandalAutomations/Increment-Environment-Variable@v1
+        with:
+          Name: ITERATION
+
       - name: Increment the value inside ITERATION
         continue-on-error: false
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
-          echo "${{ NEXT_ITERATION }}" > ITERATION
+          echo "${{ env.ITERATION }}" > ITERATION
           git commit -m "increment the ITERATION" ITERATION
           git push origin
