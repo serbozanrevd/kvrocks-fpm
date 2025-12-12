@@ -1,0 +1,76 @@
+#!/bin/sh
+
+set -eu
+
+USER="kvrocks"
+GROUP="$USER"
+CONFFILE="/etc/kvrocks/kvrocks.conf"
+
+Setup_dir () {
+  DIR="${1}"
+  MODE="${2}"
+  GROUP="${3}"
+
+  mkdir -pZ ${DIR}
+
+  if ! dpkg-statoverride --list ${DIR} >/dev/null 2>&1
+  then
+    chown ${USER}:${GROUP} ${DIR}
+    chmod ${MODE} ${DIR}
+  fi
+}
+
+if [ "$1" = "configure" ]
+then
+  adduser \
+    --system \
+    --home /var/lib/kvrocks \
+    --quiet \
+    --group \
+    ${USER} || true
+
+  Setup_dir /var/log/kvrocks 2750 adm
+  Setup_dir /var/lib/kvrocks 750 ${USER}
+  Setup_dir /etc/kvrocks 2770 ${USER}
+fi
+
+if [ "$1" = "configure" ]
+then
+  if ! dpkg-statoverride --list ${CONFFILE} >/dev/null 2>&1
+  then
+    dpkg-statoverride --update --add ${USER} ${GROUP} 640 ${CONFFILE}
+  fi
+fi
+
+# activate the service kvrocks.service
+if [ "$1" = "configure" ] || [ "$1" = "abort-upgrade" ] || [ "$1" = "abort-deconfigure" ] || [ "$1" = "abort-remove" ] ; then
+        # This will only remove masks created by d-s-h on package removal.
+        deb-systemd-helper unmask 'kvrocks.service' >/dev/null || true
+
+        # was-enabled defaults to true, so new installations run enable.
+        if deb-systemd-helper --quiet was-enabled 'kvrocks.service'; then
+                # Enables the unit on first installation, creates new
+                # symlinks on upgrades if the unit file has changed.
+                deb-systemd-helper enable 'kvrocks.service' >/dev/null || true
+        else
+                # Update the statefile to add new symlinks (if any), which need to be
+                # cleaned up on purge. Also remove old symlinks.
+                deb-systemd-helper update-state 'kvrocks.service' >/dev/null || true
+        fi
+fi
+# End of kvrocks.service
+# Automatically added by dh_installsystemd/13.6ubuntu1
+if [ "$1" = "configure" ] || [ "$1" = "abort-upgrade" ] || [ "$1" = "abort-deconfigure" ] || [ "$1" = "abort-remove" ] ; then
+  if [ -d /run/systemd/system ]; then
+    systemctl --system daemon-reload >/dev/null || true
+    if [ -n "$2" ]; then
+      _dh_action=restart
+    else
+      _dh_action=start
+    fi
+    deb-systemd-invoke $_dh_action 'kvrocks.service' >/dev/null || true
+  fi
+fi
+# End automatically added section
+
+exit 0
