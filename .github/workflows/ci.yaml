@@ -23,7 +23,7 @@ env:
     --url 'https://kvrocks.apache.org'
     --license 'Apache-2.0'
     --conflicts redis
-    --conflict redis-server
+    --conflicts redis-server
     --provide redis
     --provide redis-server
     --after-install kvrocks.postinst
