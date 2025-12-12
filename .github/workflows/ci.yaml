@@ -72,6 +72,7 @@ jobs:
           cp kvrocks/build/kvrocks release/usr/bin/
           cp kvrocks/build/kvrocks2redis release/usr/bin/
           cp kvrocks/kvrocks.conf release/etc/kvrocks
+          cp kvrocks.logrotate release/etc/logrotate.d/kvrocks
           cp -r kvrocks/LICENSE kvrocks/NOTICE kvrocks/licenses release/usr/share/kvrocks
           cp kvrocks/utils/systemd/kvrocks.service release/lib/systemd/system
 
