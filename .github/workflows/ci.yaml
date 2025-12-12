@@ -126,7 +126,7 @@ jobs:
       - name: Increment the value inside ITERATION
         continue-on-error: false
         run: |
-          ./up_iteration.sh
+          bash ./up_iteration.sh
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
           echo "${{ env.ITERATION }}" > ITERATION
