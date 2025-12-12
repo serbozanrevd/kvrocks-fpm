@@ -12,6 +12,7 @@ env:
   DEB_FPM_OPTS: >-
     --prefix '/'
     --config-files /etc/kvrocks/kvrocks.conf
+    --config-files /etc/logrotate.d/redis-server
   COMMON_FPM_OPTS: >-
     -s dir
     -n kvrocks
