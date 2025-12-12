@@ -74,7 +74,7 @@ jobs:
           cp kvrocks/kvrocks.conf release/etc/kvrocks
           cp kvrocks.logrotate release/etc/logrotate.d/kvrocks
           cp -r kvrocks/LICENSE kvrocks/NOTICE kvrocks/licenses release/usr/share/kvrocks
-          cp kvrocks/utils/systemd/kvrocks.service release/lib/systemd/system
+          cp kvrocks/utils/systemd/kvrocks.service release/lib/systemd/system/kvrocks-server.service
 
       - name: Package DEB
         uses: bpicode/github-action-fpm@v0.9.3
