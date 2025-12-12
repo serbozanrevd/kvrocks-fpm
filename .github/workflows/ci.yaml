@@ -47,7 +47,7 @@ jobs:
         run: |
           echo "VERSION=$(cat VERSION)" >> $GITHUB_ENV
           echo "ITERATION=$(cat ITERATION)" >> $GITHUB_ENV
-          echo "NEXT_ITERATION=$(($(cat ITERATION)+1))" >> $GITHUB_ENV
+          echo "NEXT_ITERATION=$((${{ env.ITERATION }}+1))" >> $GITHUB_ENV
           
       - name: Tag version and push
         run: |
