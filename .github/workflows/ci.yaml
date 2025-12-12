@@ -12,6 +12,7 @@ env:
   DEB_FPM_OPTS: >-
     --prefix '/'
     --config-files /etc/kvrocks/kvrocks.conf
+    --config-files /etc/systemd/system/kvrocks.service.d/debian.conf
     --config-files /etc/logrotate.d/kvrocks
   COMMON_FPM_OPTS: >-
     -s dir
@@ -61,13 +62,16 @@ jobs:
       - name: Make DEB release directory
         run: |
           mkdir release
+          mkdir release/etc
+          mkdir release/etc/systemd
+          mkdir release/etc/systemd/system
+          mkdir release/etc/systemd/system/kvrocks.service.d
+          mkdir release/lib
+          mkdir release/lib/systemd
           mkdir release/usr
           mkdir release/usr/bin
           mkdir release/usr/share
           mkdir release/usr/share/kvrocks
-          mkdir release/etc
-          mkdir release/lib
-          mkdir release/lib/systemd
           ls -ail kvrocks
           cp kvrocks/build/kvrocks release/usr/bin/
           cp kvrocks/build/kvrocks2redis release/usr/bin/
@@ -75,6 +79,7 @@ jobs:
           cp kvrocks.logrotate release/etc/logrotate.d/kvrocks
           cp -r kvrocks/LICENSE kvrocks/NOTICE kvrocks/licenses release/usr/share/kvrocks
           cp kvrocks/utils/systemd/kvrocks.service release/lib/systemd/system/kvrocks-server.service
+          cp systemd_debian.conf release/etc/systemd/system/kvrocks.service.d/debian.conf
 
       - name: Package DEB
         uses: bpicode/github-action-fpm@v0.9.3
