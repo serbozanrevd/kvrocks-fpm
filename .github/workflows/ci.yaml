@@ -102,6 +102,7 @@ jobs:
           cp kvrocks/utils/systemd/kvrocks.service release/lib/systemd/system/kvrocks-server.service
           sed -i 's/\/usr\/local\/bin\/kvrocks/\/usr\/bin\/kvrocks/' release/lib/systemd/system/kvrocks-server.service
           sed -i 's/kvrocks\.conf/kvrocks.conf --supervised systemd --daemonize no/' release/lib/systemd/system/kvrocks-server.service
+          sed -iE 's/(# )?log\-dir .*$/log-dir \/var\/log\/kvrocks/' release/etc/kvrocks/kvrocks.conf
           cp systemd_debian.conf release/etc/systemd/system/kvrocks.service.d/debian.conf
           echo "{\"version\": \"${{ env.Build_Version }}\"}" > release/usr/share/kvrocks/build_version.json
           ls -ailR release
