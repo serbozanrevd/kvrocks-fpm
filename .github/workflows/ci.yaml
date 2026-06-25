@@ -68,7 +68,7 @@ jobs:
         run: |
           echo "VERSION=$(cat VERSION)" >> $GITHUB_ENV
           echo "ITERATION=$(cat ITERATION)" >> $GITHUB_ENV
-          echo "PACKAGE_NAME=${{ env.SOFTWARE_NAME }}_$(cat VERSION)-$(cat ITERATION)_${{ matrix.args_architecture }}_${{ matrix.args_postfix_filename }}" >> $GITHUB_ENV
+          echo "PACKAGE_NAME=${{ env.SOFTWARE_NAME }}_$(cat VERSION)-$(cat ITERATION)_${{ matrix.args_system }}-${{ matrix.args_architecture }}-${{ matrix.args_postfix_filename }}.deb" >> $GITHUB_ENV
 
       - name: Tag version and push
         run: |
@@ -134,7 +134,11 @@ jobs:
         uses: bpicode/github-action-fpm@v0.9.3
         with:
           fpm_args: '.'
-          fpm_opts: '-t deb -v ${{ env.VERSION }} --iteration ${{ env.ITERATION }} -C release ${{ env.COMMON_FPM_OPTS }} ${{ env.DEB_FPM_OPTS }} ${{ env.PACKAGE_NAME }}.deb'
+          fpm_opts: '-t deb -v ${{ env.VERSION }} --iteration ${{ env.ITERATION }} -C release ${{ env.COMMON_FPM_OPTS }} ${{ env.DEB_FPM_OPTS }}'
+
+      - name: Make DEB release directory
+        run: |
+          echo "SIMPLE_PACKAGE_NAME=$(ls *.deb | head -n 1)" >> $GITHUB_ENV
 
       - name: Upload built asset
         uses: actions/upload-artifact@v7
@@ -142,7 +146,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           name: ${{ env.PACKAGE_NAME }}
-          path: ./${{ env.PACKAGE_NAME }}.deb
+          path: ./${{ env.SIMPLE_PACKAGE_NAME }}
           retention-days: 5
 
   release:
@@ -174,7 +178,7 @@ jobs:
           name: |
             ${{ env.VERSION }}-${{ env.ITERATION }}
           files: |
-            dist/*.deb
+            dist/${{ env.SOFTWARE_NAME }}_${{ env.VERSION }}-${{ env.ITERATION }}_*.deb
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
