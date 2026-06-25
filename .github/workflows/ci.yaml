@@ -6,9 +6,14 @@ on:
     tags:
       - 2.**
 
+concurrency:
+  group: release-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
 env:
   TODO: >-
     --deb-changelog 
+  BUILD_TYPE: Release
   DEB_FPM_OPTS: >-
     --prefix '/'
     --config-files /etc/kvrocks/kvrocks.conf
@@ -27,13 +32,29 @@ env:
     --provides redis
     --provides redis-server
     --after-install kvrocks.postinst
+  SOFTWARE_NAME: 'kvrocks'
 
 jobs:
-  release-packages:
-    name: Release DEB Package
-    runs-on: ubuntu-24.04
+  build_packages:
+    name: Build DEB Package
     strategy:
-      fail-fast: true
+      fail-fast: false
+      matrix:
+        include:
+          - platform: ubuntu-22.04
+            args_postfix_filename: 'u22'
+            args_architecture: 'linux-amd64'
+          - platform: ubuntu-24.04
+            args_postfix_filename: 'u24'
+            args_architecture: 'linux-amd64'
+          - platform: ubuntu-26.04
+            args_postfix_filename: 'u26'
+            args_architecture: 'linux-amd64'
+          - platform: ubuntu-24.04-arm
+            args_postfix_filename: 'u24'
+            args_architecture: 'linux-arm64'
+
+    runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v4.0.0
         with:
@@ -47,6 +68,7 @@ jobs:
         run: |
           echo "VERSION=$(cat VERSION)" >> $GITHUB_ENV
           echo "ITERATION=$(cat ITERATION)" >> $GITHUB_ENV
+          echo "PACKAGE_NAME=${{ env.SOFTWARE_NAME }}_$(cat VERSION)-$(cat ITERATION)_${{ matrix.args_architecture }}_${{ matrix.args_postfix_filename }}" >> $GITHUB_ENV
 
       - name: Tag version and push
         run: |
@@ -112,7 +134,37 @@ jobs:
         uses: bpicode/github-action-fpm@v0.9.3
         with:
           fpm_args: '.'
-          fpm_opts: '-t deb -v ${{ env.VERSION }} --iteration ${{ env.ITERATION }} -C release ${{ env.COMMON_FPM_OPTS }} ${{ env.DEB_FPM_OPTS }}'
+          fpm_opts: '-t deb -v ${{ env.VERSION }} --iteration ${{ env.ITERATION }} -C release ${{ env.COMMON_FPM_OPTS }} ${{ env.DEB_FPM_OPTS }} ${{ env.PACKAGE_NAME }}.deb'
+
+      - name: Upload built asset
+        uses: actions/upload-artifact@v7
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          name: ${{ env.PACKAGE_NAME }}
+          path: ./${{ env.PACKAGE_NAME }}.deb
+          retention-days: 5
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build_packages
+    steps:
+
+      - uses: actions/checkout@v4.0.0
+        with:
+          fetch-depth: 64
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Set env variables
+        run: |
+          echo "VERSION=$(cat VERSION)" >> $GITHUB_ENV
+          echo "ITERATION=$(cat ITERATION)" >> $GITHUB_ENV
+          ls -ail ./
+          ls -ail dist
 
       - name: Release
         continue-on-error: false
@@ -122,7 +174,7 @@ jobs:
           name: |
             ${{ env.VERSION }}-${{ env.ITERATION }}
           files: |
-            ./*.deb
+            dist/*.deb
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
