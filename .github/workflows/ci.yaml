@@ -43,16 +43,20 @@ jobs:
         include:
           - platform: ubuntu-22.04
             args_postfix_filename: 'u22'
-            args_architecture: 'linux-amd64'
+            args_system: 'linux'
+            args_architecture: 'amd64'
           - platform: ubuntu-24.04
             args_postfix_filename: 'u24'
-            args_architecture: 'linux-amd64'
+            args_system: 'linux'
+            args_architecture: 'amd64'
           - platform: ubuntu-26.04
             args_postfix_filename: 'u26'
-            args_architecture: 'linux-amd64'
+            args_system: 'linux'
+            args_architecture: 'amd64'
           - platform: ubuntu-24.04-arm
             args_postfix_filename: 'u24'
-            args_architecture: 'linux-arm64'
+            args_system: 'linux'
+            args_architecture: 'arm64'
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -167,18 +171,25 @@ jobs:
         run: |
           echo "VERSION=$(cat VERSION)" >> $GITHUB_ENV
           echo "ITERATION=$(cat ITERATION)" >> $GITHUB_ENV
+          echo "local"
           ls -ail ./
+          echo "dist"
           ls -ail dist
+
+      - name: Set env variables
+        run: |
+          ls -ail dist/${{ env.SOFTWARE_NAME }}_${{ env.VERSION }}-${{ env.ITERATION }}_*.deb
 
       - name: Release
         continue-on-error: false
-        uses: softprops/action-gh-release@v2.0.6
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: v${{ env.VERSION }}-${{ env.ITERATION }}
           name: |
             ${{ env.VERSION }}-${{ env.ITERATION }}
+          working_directory: dist
           files: |
-            dist/${{ env.SOFTWARE_NAME }}_${{ env.VERSION }}-${{ env.ITERATION }}_*.deb
+            ${{ env.SOFTWARE_NAME }}_${{ env.VERSION }}-${{ env.ITERATION }}_*.deb
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
