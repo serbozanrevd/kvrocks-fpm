@@ -183,11 +183,13 @@ jobs:
       - name: Prepare file list
         id: prep
         run: |
-          files=$(ls -1 dist/${{ env.SOFTWARE_NAME }}_${{ env.VERSION }}-${{ env.ITERATION }}_*.deb | sed '/dist\///')
+          files=$(ls -1 dist/${{ env.SOFTWARE_NAME }}_${{ env.VERSION }}-${{ env.ITERATION }}_*.deb | sed '/dist\///' | sed 's/ /\n/g')
           # Convert spaces/newlines into newline-separated entries for the action
-          echo "files<<EOF" >> "$GITHUB_OUTPUT"
-          echo "$files" >> "$GITHUB_OUTPUT"
-          echo "EOF" >> "$GITHUB_OUTPUT"
+          echo "files=$files" >> "$GITHUB_OUTPUT"
+
+      - name: List files
+        run: |
+          echo "${{ steps.prep.outputs.files }}"
 
       - name: Release
         continue-on-error: false
