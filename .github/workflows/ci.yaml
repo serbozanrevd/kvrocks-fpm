@@ -183,7 +183,7 @@ jobs:
       - name: Prepare file list
         id: prep
         run: |
-          files=$(ls -1 dist/${{ env.SOFTWARE_NAME }}_${{ env.VERSION }}-${{ env.ITERATION }}_*.deb)
+          files=$(ls -1 dist/${{ env.SOFTWARE_NAME }}_${{ env.VERSION }}-${{ env.ITERATION }}_*.deb | sed '/dist\///')
           # Convert spaces/newlines into newline-separated entries for the action
           echo "files<<EOF" >> "$GITHUB_OUTPUT"
           echo "$files" >> "$GITHUB_OUTPUT"
@@ -195,7 +195,9 @@ jobs:
         with:
           tag_name: v${{ env.VERSION }}-${{ env.ITERATION }}
           name: ${{ env.VERSION }}-${{ env.ITERATION }}
+          working_directory: dist
           files: ${{ steps.prep.outputs.files }}
+          fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
