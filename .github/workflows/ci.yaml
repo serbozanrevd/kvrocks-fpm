@@ -183,7 +183,7 @@ jobs:
       - name: Prepare file list
         id: prep
         run: |
-          files=$(ls -1 dist/${{ env.SOFTWARE_NAME }}_${{ env.VERSION }}-${{ env.ITERATION }}_*.deb | sed '/dist\///' | sed 's/ /\n/g')
+          files=$(ls -1 dist/${{ env.SOFTWARE_NAME }}_${{ env.VERSION }}-${{ env.ITERATION }}_*.deb | sed 's/dist\///' | sed 's/ /\n/g')
           # Convert spaces/newlines into newline-separated entries for the action
           echo "files=$files" >> "$GITHUB_OUTPUT"
 
