@@ -171,25 +171,31 @@ jobs:
         run: |
           echo "VERSION=$(cat VERSION)" >> $GITHUB_ENV
           echo "ITERATION=$(cat ITERATION)" >> $GITHUB_ENV
+
+      - name: List files
+        run: |
           echo "local"
           ls -ail ./
           echo "dist"
           ls -ail dist
+          ls -1 dist/${{ env.SOFTWARE_NAME }}_${{ env.VERSION }}-${{ env.ITERATION }}_*.deb
 
-      - name: Set env variables
+      - name: Prepare file list
+        id: prep
         run: |
-          ls -ail dist/${{ env.SOFTWARE_NAME }}_${{ env.VERSION }}-${{ env.ITERATION }}_*.deb
+          files=$(ls -1 dist/${{ env.SOFTWARE_NAME }}_${{ env.VERSION }}-${{ env.ITERATION }}_*.deb)
+          # Convert spaces/newlines into newline-separated entries for the action
+          echo "files<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$files" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
 
       - name: Release
         continue-on-error: false
         uses: softprops/action-gh-release@v3
         with:
           tag_name: v${{ env.VERSION }}-${{ env.ITERATION }}
-          name: |
-            ${{ env.VERSION }}-${{ env.ITERATION }}
-          working_directory: dist
-          files: |
-            ${{ env.SOFTWARE_NAME }}_${{ env.VERSION }}-${{ env.ITERATION }}_*.deb
+          name: ${{ env.VERSION }}-${{ env.ITERATION }}
+          files: ${{ steps.prep.outputs.files }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
