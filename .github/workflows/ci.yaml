@@ -143,6 +143,10 @@ jobs:
       - name: Make DEB release directory
         run: |
           echo "SIMPLE_PACKAGE_NAME=$(ls *.deb | head -n 1)" >> $GITHUB_ENV
+      
+      - name: Rename package name
+        run: |
+          mv "./${{ env.SIMPLE_PACKAGE_NAME }}" "./${{ env.PACKAGE_NAME }}"
 
       - name: Upload built asset
         uses: actions/upload-artifact@v7
@@ -150,8 +154,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           name: ${{ env.PACKAGE_NAME }}
-          path: ./${{ env.SIMPLE_PACKAGE_NAME }}
-          retention-days: 5
+          path: ./${{ env.PACKAGE_NAME }}
+          retention-days: 2
 
   release:
     runs-on: ubuntu-latest
@@ -166,6 +170,7 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           path: dist
+          merge-multiple: true
 
       - name: Set env variables
         run: |
