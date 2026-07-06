@@ -190,9 +190,10 @@ jobs:
           echo "-3--"
           echo "$(ls -1 dist/${{ env.SOFTWARE_NAME }}_${{ env.VERSION }}-${{ env.ITERATION }}_*.deb | sed 's/dist\///' | sed 's/ /\n/g')"
           echo "-4--"
-          files=$(ls -1 dist/${{ env.SOFTWARE_NAME }}_${{ env.VERSION }}-${{ env.ITERATION }}_*.deb | sed 's/dist\///' | sed 's/ /\n/g')
+          # files=$(ls -1 dist/${{ env.SOFTWARE_NAME }}_${{ env.VERSION }}-${{ env.ITERATION }}_*.deb | sed 's/dist\///' | sed 's/ /\n/g')
           # Convert spaces/newlines into newline-separated entries for the action
-          echo "files=$files" >> "$GITHUB_OUTPUT"
+          # echo "files=$files" >> "$GITHUB_OUTPUT"
+          echo "files=$(ls -1 dist/${{ env.SOFTWARE_NAME }}_${{ env.VERSION }}-${{ env.ITERATION }}_*.deb | sed 's/dist\///' | sed 's/ /\n/g')" >> "$GITHUB_OUTPUT"
 
       - name: List files
         run: |
