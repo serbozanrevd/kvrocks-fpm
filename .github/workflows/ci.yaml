@@ -183,6 +183,13 @@ jobs:
       - name: Prepare file list
         id: prep
         run: |
+          echo "-1--"
+          echo "$(ls -1 dist/${{ env.SOFTWARE_NAME }}_${{ env.VERSION }}-${{ env.ITERATION }}_*.deb )"
+          echo "-2--"
+          echo "$(ls -1 dist/${{ env.SOFTWARE_NAME }}_${{ env.VERSION }}-${{ env.ITERATION }}_*.deb | sed 's/dist\///' )"
+          echo "-3--"
+          echo "$(ls -1 dist/${{ env.SOFTWARE_NAME }}_${{ env.VERSION }}-${{ env.ITERATION }}_*.deb | sed 's/dist\///' | sed 's/ /\n/g')"
+          echo "-4--"
           files=$(ls -1 dist/${{ env.SOFTWARE_NAME }}_${{ env.VERSION }}-${{ env.ITERATION }}_*.deb | sed 's/dist\///' | sed 's/ /\n/g')
           # Convert spaces/newlines into newline-separated entries for the action
           echo "files=$files" >> "$GITHUB_OUTPUT"
